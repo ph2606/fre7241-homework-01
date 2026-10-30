@@ -2,7 +2,7 @@ PASS: Return matrices and named horizon outputs have the required shapes
 PASS: Paired bootstrap returns equal sums of the underlying daily log returns
 PASS: All five optimized weights agree with inverse-covariance calculations
 PASS: Ten-year optimization agrees with the independent mathematical optimum
-PASS: Risk function has the correct sign and handles arbitrary input data
+PASS: Risk function agrees with the synthetic sample's moments
 PASS: CAPM tables and alpha matrix have eight assets and one column per interval
 PASS: Every annualized alpha agrees with independent OLS regression
 PASS: Every CAPM intercept and beta agrees with independent OLS regression

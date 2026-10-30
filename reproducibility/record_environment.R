@@ -1,6 +1,4 @@
-# Record the reference environment and fingerprints of the Homework 1 inputs.
 # Run from the repository root: Rscript --vanilla reproducibility/record_environment.R
-# This records the current environment; it does not install or update packages.
 
 library(rutils)
 library(PerformanceAnalytics)

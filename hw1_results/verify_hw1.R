@@ -1,5 +1,4 @@
 # Run from Homework_01: Rscript --vanilla hw1_results/verify_hw1.R
-# Independent numerical checks for Panagiotis_Housos_hw1.R.
 solution <- new.env(parent = globalenv())
 warnings <- character()
 execution <- withCallingHandlers(
@@ -27,8 +26,7 @@ check("Return matrices and named horizon outputs have the required shapes",
       identical(names(solution$retl), names(solution$weightv)) &&
       identical(names(solution$retl), names(solution$wealthl)))
 
-# Check cumulative holding-period returns by summing daily returns instead
-# of subtracting the two prices as in the submitted implementation.
+# Sum daily log returns to check the endpoint differences independently.
 daily <- diff(solution$pricev)
 reconstructed <- vapply(solution$startd, function(start) {
   colSums(daily[seq.int(start, start + solution$holdp - 2L), , drop = FALSE])
@@ -36,8 +34,7 @@ reconstructed <- vapply(solution$startd, function(start) {
 check("Paired bootstrap returns equal sums of the underlying daily log returns",
       max(abs(reconstructed - solution$retm)) < 1e-12)
 
-# Independently obtain the long-only maximum of mean/SD from asset moments.
-# Interior stationary weights are proportional to inverse(covariance) * mean.
+# Interior mean/SD weights are proportional to solve(covariance, mean).
 moment_optimum <- function(returns) {
   mu <- rowMeans(returns)
   sigma <- cov(t(returns))
@@ -61,8 +58,7 @@ tenyear <- optimize(solution$riskretfun, interval = c(0, 1),
 check("Ten-year optimization agrees with the independent mathematical optimum",
       abs(tenyear - moment_optimum(solution$retm)) < 1e-4)
 
-# Test the risk function on fresh data, using moments rather than constructing
-# the portfolio sample in the same way as the submitted function.
+# Compare the risk function with moments of a separate sample.
 synthetic <- rbind(c(-0.4, 0.1, 0.8, 0.3, -0.2),
                    c(0.2, 0.5, -0.1, 0.6, 0.3))
 mu <- rowMeans(synthetic)
@@ -72,7 +68,7 @@ risk_errors <- vapply(c(0, 0.3, 1), function(w) {
   expected <- -sum(a * mu) / sqrt(drop(t(a) %*% sigma %*% a))
   abs(solution$riskretfun(synthetic, w) - expected)
 }, numeric(1))
-check("Risk function has the correct sign and handles arbitrary input data",
+check("Risk function agrees with the synthetic sample's moments",
       max(risk_errors) < 1e-12)
 
 check("CAPM tables and alpha matrix have eight assets and one column per interval",
@@ -81,8 +77,7 @@ check("CAPM tables and alpha matrix have eight assets and one column per interva
       identical(rownames(solution$alphav), solution$symbolv[-1]) &&
       identical(colnames(solution$alphav), names(solution$capml)))
 
-# Regress all eight ETFs directly with lm.fit; this does not call table.CAPM.
-# Use the assignment's documented inclusive endpoint intervals.
+# Fit the same endpoint windows directly with OLS.
 alpha_errors <- beta_errors <- intercept_errors <- numeric(length(solution$capml))
 for (i in seq_along(solution$capml)) {
   rows <- seq.int(max(1L, solution$endd[i]), solution$endd[i + 1L])

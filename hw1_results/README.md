@@ -1,61 +1,41 @@
-# Homework 1 — Panagiotis Housos
+# Homework 1 results
 
-Submit `../Panagiotis_Housos_hw1.R`. All 18 code placeholders across the eight
-questions are completed. The original assignment and reference images remain
-unchanged.
+The submission is [`Panagiotis_Housos_hw1.R`](../Panagiotis_Housos_hw1.R).
+Run it from the repository root:
 
-From the `Homework_01` folder, run:
-
-```powershell
+```sh
 Rscript --vanilla Panagiotis_Housos_hw1.R
 ```
 
-Required R packages are `rutils`, `PerformanceAnalytics`, and `RobStatTM`.
-The missing `RobStatTM` package and its dependencies were installed locally.
-The submission uses the assignment's packaged `rutils::etfenv` data.
+The script requires `rutils`, `PerformanceAnalytics`, and `RobStatTM`. It saves
+the two requested PNG plots in this directory. `execution_output.txt` contains
+the console output captured during verification. The `tables/` directory holds
+the report's CSV and RDS exports.
 
-The generated plots are `portf_wealth_longshort.png` and `scatter_etfs.png`
-in this results folder. `execution_output.txt` contains the calculated output.
+## Numerical checks
 
-## Conventions
+```sh
+Rscript --vanilla hw1_results/verify_hw1.R
+```
 
-- Part I follows the lecture's convention that a holding block contains
-  `holdp` price observations, spanning `holdp - 1` return intervals. Sampling
-  includes every valid block start, with replacement, and uses the same block
-  for VTI and IEF. “Wealth” is the weighted cumulative log-return quantity used
-  in the assignment. The objective is its negative mean divided by standard
-  deviation, minimized with `optimize()` over weights from zero to one.
-- Part II includes both neighboring endpoint observations, as explicitly
-  illustrated by the assignment's `retsub` example. Adjacent intervals therefore
-  share their boundary observation. VTI is the benchmark, excluded from the
-  eight comparison ETFs, and annualization uses 252 trading days.
+The ten checks cover output dimensions, paired bootstrap returns, the portfolio
+objective, optimized weights, CAPM estimates, rankings, and plot files. The
+optimization checks use asset means and covariance; the CAPM checks use direct
+OLS regression. Results are saved in `verification.txt`.
 
-## Verification
+## Data conventions
 
-Run `Rscript --vanilla hw1_results/verify_hw1.R` from `Homework_01` to reproduce
-the checks. All **10 checks passed**, including independent inverse-covariance
-optimal-weight calculations and direct OLS verification of all years' alpha,
-beta, and annualized alpha values. See `verification.txt` for the results.
-Both generated plots were also visually inspected.
+Holding blocks contain `holdp` price observations and span `holdp - 1` return
+intervals. Starts are sampled with replacement from every valid block start,
+using the same block for VTI and IEF. The objective is the negative mean of the
+weighted cumulative log return divided by its standard deviation.
 
-`table.CAPM()` emits one convergence warning for VNQ's 2012 **Beta- Robust**
-fit. This concerns the robust downside-beta estimate. Ordinary alpha/beta,
-annualized alpha, rankings, and the scatterplot are unaffected and independently
-verified. The submitted code retains the package warning; it does not suppress
-or replace the requested calculation.
+The CAPM calculations include both neighboring endpoint observations, as in the
+assignment's `retsub` example. Adjacent windows share their boundary observation.
+VTI is the benchmark; the eight other ETFs are ranked by the package's annualized
+alpha, using 252 trading days.
 
-## Course-folder review
-
-The review covered the complete course inventory, both syllabi, all 21 lecture
-PDFs, readings/reference guides, code examples, setup files, and dataset
-structures. All 14 R data archives were loaded and inspected; the text tables,
-identifiers, and workbook were also inspected. All 171 original course files
-were checked against their recorded SHA-256 hashes and remain unchanged.
-
-Available PDF text was extracted and surveyed across the folder. The homework's
-relevant sections were read in detail, including `strategies_univariate.pdf`
-slides 14–19, the bootstrap and optimization materials, R functionals and
-time-series indexing, and CAPM examples. All substantive code-example sources
-were read. The large textbooks were reviewed through their contents and
-relevant sections, not cover to cover; the two media videos were inventoried
-but not watched, and scanned/garbled PDF text limited some unrelated readings.
+`table.CAPM()` reports one convergence warning for VNQ's 2012 `Beta- Robust` fit.
+This affects the robust downside-beta estimate. The ordinary alpha, beta,
+annualized alpha, rankings, and scatterplot are unaffected. The warning is
+recorded in `verification.txt` and `tables/execution_warnings.txt`.

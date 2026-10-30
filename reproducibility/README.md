@@ -1,23 +1,31 @@
-These files record the environment used to execute and verify Homework 1.
+# Reference environment
 
-- `package-versions.csv` records the four direct packages and their installed
-  dependency closure, including GitHub commit metadata when available.
-- `session-info.txt` records the R version, operating system, and loaded namespaces.
-- `data-manifest.csv` fingerprints only the ETF subsets used by this assignment,
-  before and after preprocessing. It records dimensions, dates, symbols, the
-  source `rutils` commit, and SHA-256 hashes of R version-3 serialized objects.
-  These hashes identify the recorded R objects; they are not hashes of CSV files.
+- `package-versions.csv`: versions of the four direct packages and their
+  dependencies, with GitHub commit metadata where available.
+- `session-info.txt`: R version, platform, locale, and loaded namespaces.
+- `data-manifest.csv`: symbols, preprocessing, dimensions, dates, source commit,
+  and SHA-256 hashes for the assignment's input data subsets.
 
-The ETF observations are supplied by the pinned `rutils` package. No account
-credentials, live downloads of market prices, or unrelated course datasets are
-required. The reference data end on April 7, 2026.
+Data hashes use `serialize(object, NULL, version = 3)` and identify the R objects,
+not the exported CSV files. The packaged `rutils::etfenv` data end on April 7,
+2026; running the analysis does not download current market prices.
 
-From the repository root, run `Rscript --vanilla setup.R` to install missing
-packages. Existing installations are retained. The two course GitHub packages
-are pinned to the reference commits for new installations; CRAN package versions
-and their dependencies are recorded rather than forced on an existing library.
-Consequently, this is an environment record, not a complete dependency lockfile.
+From the repository root, install missing packages with:
 
-To replace these records with a snapshot of the current environment, run
-`Rscript --vanilla reproducibility/record_environment.R`. This uses `digest`,
-which is already a transitive dependency of the course packages.
+```sh
+Rscript --vanilla setup.R
+```
+
+New installations of `rutils` and `PerformanceAnalytics` use the reference
+GitHub commits. Existing installations are retained. CRAN package versions are
+recorded without forcing changes to an existing library. These files describe
+the reference environment rather than enforce a dependency lockfile.
+
+To replace the records with the current environment and data fingerprints:
+
+```sh
+Rscript --vanilla reproducibility/record_environment.R
+```
+
+The recording script uses `digest`, a transitive dependency of the course
+packages.

@@ -1,6 +1,4 @@
-# Reproduce the submitted solution and export report tables and complete data.
 # Run from Homework_01: Rscript --vanilla report/export_results.R
-# The submitted solution and professor's originals are read without modification.
 
 export_results <- function() {
   source_name <- "Panagiotis_Housos_hw1.R"
@@ -37,7 +35,7 @@ export_results <- function() {
   writeLines(if (length(source_warnings)) unique(source_warnings) else "None.",
              file.path(data_dir, "execution_warnings.txt"))
 
-  # TeX tables contain only tabular material; the report owns captions/scaling.
+  # Captions and table scaling are set in the LaTeX report.
   tex_escape <- function(x) {
     replacement <- c("\\" = "\\textbackslash{}", "&" = "\\&", "%" = "\\%",
                      "$" = "\\$", "#" = "\\#", "_" = "\\_",
@@ -109,8 +107,7 @@ export_results <- function() {
                    dimnames = list(NULL, paste0("Draw ", 1:5))),
             "short_wealth_first5.tex", row_labels = "Optimal", digits = 8)
 
-  # Reconstruct each horizon's exact starts to audit dependence and block reuse.
-  # Return intervals within an h-observation block have length L = h - 1.
+  # Replay the bootstrap seed to recover the dates of each scenario.
   set.seed(1121, "Mersenne-Twister", sample.kind = "Rejection")
   starts_by_horizon <- lapply(hw$holdv, function(h) {
     sample.int(hw$nrows - h + 1L, size = hw$nboot, replace = TRUE)
@@ -164,7 +161,6 @@ export_results <- function() {
   rownames(horizon_summary) <- NULL
   write_csv(horizon_summary, "horizon_summary.csv")
 
-  # Vector graphics for the PDF report, independently of the source PNG device.
   figure_dir <- file.path("report", "figures")
   dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)
   render_pdf <- function(filename, draw) {
@@ -243,7 +239,6 @@ export_results <- function() {
     write_csv(scenario, paste0(names(hw$retl)[i], "_scenarios.csv"))
   }
 
-  # Preserve every statistic returned by table.CAPM, not only alpha/beta.
   for (year in names(hw$capml)) {
     capm <- hw$capml[[year]]
     write_csv(matrix_frame(as.matrix(capm), "Statistic"),

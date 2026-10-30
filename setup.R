@@ -1,7 +1,5 @@
-# Install the packages needed for Homework 1 and its verification script.
+# Install missing packages; retain existing installations.
 # Run from the repository root with: Rscript --vanilla setup.R
-# Existing installations are retained; reference versions are recorded under
-# reproducibility/. Only the two course GitHub packages have pinned commits.
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
@@ -36,7 +34,6 @@ missing_cran <- cran_packages[
   !vapply(cran_packages, is_installed, logical(1))
 ]
 if (length(missing_cran) > 0L) {
-  # Prefer precompiled Windows packages, including RobStatTM and its dependencies.
   package_type <- if (.Platform$OS.type == "windows") "binary" else "source"
   install.packages(missing_cran, type = package_type)
 }

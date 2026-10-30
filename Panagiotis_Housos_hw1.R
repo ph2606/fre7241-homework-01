@@ -8,9 +8,7 @@
 # and upload the file to Brightspace
 
 # Student: Panagiotis Housos
-# Completed solution. Plots are saved in hw1_results/ in the working directory.
-# Methods follow strategies_univariate.pdf (slides 14-19), functions.pdf,
-# dates_time_series.pdf, and the CAPM examples in data_management.pdf.
+# Figures are saved in hw1_results/.
 
 ############## Part I
 # Summary: Calculate the optimal weights for a portfolio 
@@ -41,19 +39,17 @@ nrows <- NROW(pricev)
 # Sample the start dates for the bootstrap.
 # Run the code below.
 
-# Follow the lecture convention: holdp counts price observations in a block,
-# so the first and last prices are separated by holdp - 1 return intervals.
+# A block contains holdp prices and spans holdp - 1 return intervals.
 holdp <- 10 * 252
 nboot <- 1000
 set.seed(1121, "Mersenne-Twister", sample.kind = "Rejection")
-# Include every valid block start, including the final possible block.
+# There are nrows - holdp + 1 valid starting rows.
 startd <- sample.int(nrows - holdp + 1L, size = nboot, replace = TRUE)
 
 
 # Calculate a matrix of 1000 simulated VTI and IEF returns,
 # for the 10 year holding period.
 
-# Sample the same historical block for both ETFs to preserve dependence.
 retm <- t(pricev[startd + holdp - 1L, , drop = FALSE] -
           pricev[startd, , drop = FALSE])
 
@@ -75,7 +71,7 @@ weightv <- 0.5
 # Calculate the vector of wealths for retm and weightv.
 # You can use the functions drop(), c(), and the %*% operator.
 
-# "Wealth" here is the weighted cumulative log return used in the lectures.
+# Wealth is measured as a weighted cumulative log return.
 wealthv <- drop(c(weightv, 1 - weightv) %*% retm)
 
 
@@ -106,7 +102,6 @@ riskretfun(retm, weightv)
 # Calculate the optimal VTI weight using the function
 # optimize() and the function riskretfun().
 
-# Minimize the negative mean/SD ratio over fully invested long-only weights.
 weightv <- optimize(riskretfun, interval = c(0, 1), retm = retm)$minimum
 
 
@@ -125,7 +120,7 @@ holdv <- round(nrows * seq(0.1, 0.5, 0.1))
 # Calculate a named list of 1000 simulated VTI and 
 # IEF returns, one for each holding period in holdv.
 
-set.seed(1121, "Mersenne-Twister", sample.kind="Rejection")
+set.seed(1121, "Mersenne-Twister", sample.kind = "Rejection")
 
 retl <- lapply(holdv, function(holdp) {
   startd <- sample.int(nrows - holdp + 1L, size = nboot, replace = TRUE)
@@ -177,6 +172,8 @@ weightv
 # large.
 # This may be because of higher correlations between 
 # stocks and bonds for very short holding periods.
+
+# The final weight also falls, from 0.4588 to 0.4323, in this sample.
 
 
 # 4. (10pts)
@@ -256,7 +253,7 @@ endd
 # the last two end points.
 # You can use the function NROW().
 
-# Include both endpoint rows, as illustrated by the assignment's retsub.
+# Include both endpoint rows, as in the supplied retsub example.
 retsub <- retp[seq.int(endd[NROW(endd) - 1L], endd[NROW(endd)]), symbolv]
 
 
@@ -311,8 +308,7 @@ tail(retsub)
 #   install.packages("RobStatTM")
 
 capml <- lapply(seq_len(NROW(endd) - 1L), function(i) {
-  # The assignment's endpoint intervals share the boundary observation.
-  # max(1L, ...) replaces the initial zero endpoint with the first row.
+  # The first endpoint is zero; subsequent windows share the year-end row.
   rows <- seq.int(max(1L, endd[i]), endd[i + 1L])
   retsub <- retp[rows, symbolv]
   capm <- PerformanceAnalytics::table.CAPM(
@@ -452,6 +448,7 @@ namev
 
 alpha2008 <- alphav[, "2008"]
 alpha2009 <- alphav[, "2009"]
+dir.create("hw1_results", showWarnings = FALSE)
 png(file.path("hw1_results", "scatter_etfs.png"),
     width = 1500, height = 1250, res = 160)
 plot(alpha2008, alpha2009, pch = 1, cex = 1.2,

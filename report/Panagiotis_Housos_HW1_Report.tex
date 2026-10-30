@@ -66,36 +66,21 @@
 {\Large Panagiotis Housos\par}
 \vspace{0.12in}
 {\large October 29, 2026\par}
-\vfill
-\begin{minipage}{0.94\textwidth}
-\textbf{What this report contains.} Solutions to all eight questions, the
-historical bootstrap and optimization methods, complete annual alpha and
-ranking matrices, both requested plots, all annual CAPM tables, the full
-submitted R code, the execution output, and independent verification.
-
-The approximately ten-year bootstrap selects a VTI weight of
-$\HWTenYearWeight$. The annual ETF analysis produces an $8\times21$ alpha
-matrix. All ten independent numerical and artifact checks pass.
-\end{minipage}
 \end{titlepage}
 \pagenumbering{roman}
 \hypersetup{pageanchor=true}
 
 \section*{Abstract}
-This homework studies two historical portfolio questions using the supplied
-\texttt{rutils::etfenv} data. First, a paired historical block bootstrap
-constructs 1,000 cumulative VTI and IEF log-return scenarios at each investment
-horizon. A bounded scalar optimization maximizes the mean-to-standard-deviation
-ratio of the assignment's weighted cumulative log-return measure. The
-approximately ten-year optimal stock allocation is 45.43\%, while allocations
-across the five requested horizons range from 35.97\% to 45.88\% and are not
-monotonic. Second, yearly endpoint intervals are used to estimate CAPM-style
-statistics for eight ETFs against VTI. The report presents the full annualized
-alpha and ranking matrices and a 2008--2009 alpha scatterplot. It distinguishes
-the package's annualization convention from realized returns, documents shared
-interval boundaries and partial years, and records the robust-regression
-warning. Independent moment-based optimization and ordinary least-squares
-calculations verify the numerical results.
+A paired historical bootstrap produces 1,000 VTI and IEF cumulative
+log-return scenarios at each holding period. Maximizing the portfolio
+mean-to-standard-deviation ratio gives an approximately ten-year allocation
+of 45.43\% VTI and 54.57\% IEF. Optimal stock weights across the five requested
+horizons range from 35.97\% to 45.88\% and are not monotonic. Annual CAPM
+regressions compare eight ETFs with VTI over 21 endpoint intervals from
+2006 to 2026. The 2008--2009 alpha correlation is $\HWAlphaCorrelation$,
+with four ETFs retaining their alpha sign and four reversing it. The first
+and last intervals cover partial years; the large final-year annualized
+alphas extrapolate a short sample's daily regression intercepts.
 
 \tableofcontents
 \clearpage
@@ -103,11 +88,9 @@ calculations verify the numerical results.
 
 \section{Data, conventions, and reproducibility}
 \label{sec:data}
-The solution follows the course's bootstrap, R functional-programming, and
-CAPM examples~\cite{univariate,functions,dates,data}. The executable submission
-is \texttt{Panagiotis\_Housos\_hw1.R}. Its values are computed from the data;
-the professor's example output is used as a diagnostic, rather than inserted
-into the calculations.
+The calculations use \texttt{rutils::etfenv} and the bootstrap, optimization,
+and CAPM methods from the course notes~\cite{univariate,functions,dates,data}.
+The R submission is \texttt{Panagiotis\_Housos\_hw1.R}.
 
 Part I selects VTI and IEF prices, removes rows with missing prices, extracts
 a numeric matrix, and takes logarithms. The resulting
@@ -118,9 +101,8 @@ VNQ, USO, XLY, XLP, XLE, XLF, and XLK, applies the assigned
 \HWReturnRows{} daily observations from \texttt{\HWReturnStart} through
 \texttt{\HWReturnEnd}.
 
-The supplied return series contains \emph{log returns}, as confirmed against
-differences of log prices. This matters for interpreting both the portfolio
-metric and the regression outputs.
+The supplied return series contains daily \emph{log returns}, confirmed
+against differences of log prices for all nine selected ETFs.
 
 Two indexing conventions follow the assignment and lecture examples:
 \begin{itemize}
@@ -132,11 +114,10 @@ adjacent intervals share one boundary observation. These are the assignment's
 endpoint windows, rather than strictly disjoint calendar-year samples.
 \end{itemize}
 
-All simulations use the specified seed 1121, the Mersenne--Twister generator,
-and rejection sampling. The repository records package versions, GitHub
-source commits, the R session, input-data fingerprints, complete scenario
-exports, and verification results. The analysis is historical and in sample;
-it does not evaluate an allocation or ranking strategy on a held-out period.
+The bootstrap uses seed 1121, the Mersenne--Twister generator, and rejection
+sampling. Package versions, source commits, and input-data hashes are
+recorded under \texttt{reproducibility/}. All estimates use the historical
+sample; no period is held out for evaluating future performance.
 
 \section{Part I: optimal stock and bond allocations}
 \subsection{I.1: bootstrap scenarios and portfolio wealth measure}
@@ -170,15 +151,15 @@ shows the first five values at $w=0.5$.
 \smallinput{wealth_first5.tex}{The first five portfolio-metric values at the
 50/50 allocation, using the scenarios in Table~\ref{tab:tenreturns}.}{tab:equalwealth}
 
-\textbf{Interpretation.} Although the assignment calls $W$ ``wealth,'' it is a
-weighted cumulative log-return metric. If the initial dollar allocation were
+The assignment's wealth measure $W$ is a weighted cumulative log return.
+If the initial dollar allocation were
 held without rebalancing, terminal gross wealth per initial dollar would be
 \begin{equation}
 G_b(w)=w\exp(R_{\mathrm{VTI},b}^{(h)})
        +(1-w)\exp(R_{\mathrm{IEF},b}^{(h)}),
 \end{equation}
-and $\log G_b(w)$ generally differs from $W_b(w)$. The submitted solution
-optimizes the measure requested in the assignment.
+and $\log G_b(w)$ generally differs from $W_b(w)$. The optimization below
+uses $W_b(w)$.
 
 \subsection{I.2: risk adjustment and bounded optimization}
 For a given scenario matrix, define
@@ -199,12 +180,13 @@ $\HWEqualRiskRatio$, so the objective is its negative. Optimization gives
 \qquad w_{\mathrm{IEF}}^\star=1-\HWTenYearWeight.}
 \end{equation}
 Thus the optimized allocation is approximately 45.43\% VTI and 54.57\% IEF,
-with optimized ratio $\HWOptimalRiskRatio$.
+with optimized ratio $\HWOptimalRiskRatio$. Relative to the 50/50 allocation,
+the mean/SD ratio increases by approximately 1.56\%.
 
-This ratio describes the cumulative horizon metric across sampled windows.
-It is not an annualized daily Sharpe ratio and does not subtract a risk-free
-return. Independent inverse-covariance calculations agree with the numerical
-optimum within the optimizer's default tolerance.
+The ratio is calculated across cumulative holding-period outcomes, without
+annualization or a risk-free adjustment. An inverse-covariance calculation
+agrees with the numerical optimum within \texttt{optimize()}'s default
+tolerance.
 
 \subsection{I.3: allocations at the five requested horizons}
 The requested horizons are generated from the sample size:
@@ -218,22 +200,22 @@ and returns a named vector of optimal VTI allocations.
 
 \wideinput{horizon_summary.tex}{Optimized allocations and portfolio-metric
 summary statistics across the five holding blocks. Trading years use
-$(h-1)/252$; metrics are cumulative log-return quantities.}{tab:horizons}
+$(h-1)/252$; VTI is a portfolio fraction and SD is the sample standard
+deviation of the weighted log-return metric $W$.}{tab:horizons}
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.92\linewidth]{figures/optimal_weights_by_horizon.pdf}
-\caption{Optimal VTI allocations across the five requested holding blocks.
-The connecting line describes these five historical estimates.}
+\caption{Optimal VTI allocations across the five requested holding blocks.}
 \label{fig:weights}
 \end{figure}
 
-\textbf{Commentary.} The stock weights are not monotonic in the holding
-period. They fall from 41.27\% to 35.97\%, rise to 45.88\%, then fall to
-43.23\% at the longest horizon. Therefore the results do not support an
-unqualified claim that optimal stock exposure always increases with the
-investment horizon. The asset-return correlation is least negative in the
-shortest-horizon sample, but this descriptive pattern alone does not establish
-why an optimal weight changes.
+The stock weights fall from 41.27\% to 35.97\%, rise to 45.88\%, then fall to
+43.23\% at the longest horizon. The relationship with holding period is
+therefore not monotonic. The VTI--IEF correlation is $-0.2383$ at the shortest
+horizon, compared with $-0.7053$ at the middle horizon. Holding marginal
+variances fixed, more negative correlation reduces portfolio variance. The
+optimal allocation also depends on expected returns and each asset's
+dispersion.
 
 The portfolio variance is
 \begin{equation}
@@ -260,19 +242,19 @@ the assignment's cumulative log-return ``wealth'' convention.}
 The longest-horizon distribution lies farther to the right. Its sample mean
 is approximately $0.78049$, compared with $0.14457$ for the shortest horizon.
 The corresponding standard deviations are approximately $0.09988$ and
-$0.09493$. In particular, the rightward shift is not evidence that absolute
-dispersion is smaller at the longest horizon. The shortest sample has 11.8\%
+$0.09493$: absolute dispersion is slightly larger at the longest horizon.
+The shortest sample has 11.8\%
 negative portfolio-metric values, while the longest sample has none.
 
-These are frequencies among historical windows, not established future loss
-probabilities. Bootstrap draws are independent conditional on the fixed
-empirical dataset, but the underlying historical blocks overlap and may be
-sampled repeatedly. One thousand draws therefore do not represent one
-thousand newly observed independent market episodes. The overlap diagnostics
-in Appendix~\ref{app:additional} quantify this distinction without treating
-them as an estimate of effective sample size. The favorable historical
-sample, changing market regimes, and the absence of an out-of-sample test
-limit any extrapolation of these optimized allocations.
+These frequencies describe the sampled historical windows. Bootstrap draws
+are independent conditional on the empirical dataset, while the underlying
+blocks overlap and may repeat. For the initial ten-year calculation,
+\HWTenYearOverlapPct\% of sampled scenario pairs share at least one daily
+return interval; the historical sample can accommodate at most
+\HWTenYearDisjointBlocks{} disjoint ten-year return blocks. The overlap
+diagnostics in Appendix~\ref{app:additional} describe this reuse of history.
+Changing market regimes and the favorable long-horizon sample limit the use
+of these estimates as future allocation rules.
 
 \clearpage
 \section{Part II: annual ETF alpha and rankings}
@@ -297,8 +279,8 @@ For comparison asset $a$ in a given interval, the ordinary regression is
 r_{a,t}=\alpha_a+\beta_a r_{\mathrm{VTI},t}+\varepsilon_{a,t},
 \label{eq:capm}
 \end{equation}
-where the supplied $r$ are daily log returns and the assigned risk-free rate
-is zero. \texttt{table.CAPM()} compares the eight non-benchmark ETFs against
+where the supplied $r$ are daily log returns and \texttt{Rf = 0}, the package
+default. \texttt{table.CAPM()} compares the eight non-benchmark ETFs against
 VTI and calculates the requested summary table. Column names such as
 \texttt{IEF to VTI} are simplified to the ETF ticker, and the list is named
 with the interval-ending years.
@@ -307,12 +289,18 @@ with the interval-ending years.
 2006. The remaining annual tables are in Appendix~\ref{app:capm}. Values
 retain the package's four-decimal reporting convention.}{tab:capmfirst}
 
-The package reports ordinary and robust coefficients, conditional up/down
-betas, correlations, and benchmark-relative performance measures. During the
-2012 VNQ \texttt{Beta- Robust} calculation, a robust-regression M-step reports
-nonconvergence. The submission retains this warning. It concerns that robust
-downside-beta estimate; the ordinary alpha/beta values and annualized alphas
-used below are independently verified and unaffected.
+\begin{samepage}
+In the first interval, IEF's beta of $0.0326$ indicates little sensitivity
+to VTI's daily returns. XLE has the largest beta, $1.2493$. VNQ has the
+highest annualized alpha, $0.1926$, while USO has the lowest, $-0.3242$.
+These comparisons account for fitted VTI exposure rather than ranking the
+ETFs by total return.\par
+\end{samepage}
+
+One package warning concerns the M-step in VNQ's 2012
+\texttt{Beta- Robust} regression on days with negative VTI returns. That
+robust downside-beta estimate is reported with the warning retained. The
+ordinary alpha and beta estimates used below pass the direct OLS checks.
 
 \subsection{II.2: annualized alpha matrix}
 The code extracts each table's \texttt{Annualized Alpha} row with
@@ -324,15 +312,14 @@ decimal values; for example, $0.1205$ corresponds to 12.05\%.}{tab:alpha1}
 \wideinput{alphas_2017_2026.tex}{Annualized alpha, 2017--2026. The 2026
 column is based on the partial final endpoint window.}{tab:alpha2}
 
-\textbf{Interpretation and units.} Alpha is the fitted intercept relative to
-VTI exposure; it is not the ETF's realized total return. The requested
+Alpha is the fitted intercept relative to VTI exposure. The
 \texttt{PerformanceAnalytics} table defines annualized alpha as
 \begin{equation}
 A_a=(1+\widehat\alpha_{a,\mathrm{daily}})^{252}-1.
 \label{eq:annualalpha}
 \end{equation}
-This is the package's convention, applied here to regressions of the supplied
-daily log returns. It differs from the annual log-intercept
+Applied to the supplied daily log returns, this convention differs from the
+annual log-intercept
 $252\widehat\alpha_{a,\mathrm{daily}}$.
 
 USO's 2026 entry of $9.9429$ corresponds to approximately 994.29\%
@@ -359,10 +346,9 @@ within each interval, and row 8 is the lowest.
 \wideinput{rankings_2017_2026.tex}{Descending annual alpha rankings,
 2017--2026.}{tab:rank2}
 
-These are retrospective rankings of benchmark-adjusted regression alpha,
-rather than rankings of realized total returns. The leading ETF changes
-across years. The exercise does not implement or test a rule that uses a
-previous year's ranking to select the following year's portfolio.
+The leading ETF changes across years. These rankings summarize
+benchmark-adjusted regression alpha within each interval; they do not
+measure realized total return or the performance of a forecasting strategy.
 
 \subsection{II.4: 2008--2009 alpha scatterplot}
 The scatterplot places 2008 alpha on the horizontal axis and 2009 alpha on the
@@ -386,16 +372,12 @@ XLY and XLP remain positive; USO and XLF remain negative. Overall,
 \HWAlphaSignSameCount{} ETFs retain their alpha sign and
 \HWAlphaSignChangedCount{} change sign.
 
-The plot supplies little evidence of positive alpha persistence from 2008 to
-2009 in this small ETF cross-section. Eight related assets over one pair of
-years cannot establish that alpha generally has no relationship across time.
-No predictive conclusion or statistical significance claim is inferred from
-this figure alone.
+The plot shows little positive alpha persistence from 2008 to 2009. The
+sample contains only eight related ETFs and one pair of years, so it does
+not support a broader conclusion about alpha persistence.
 
-\section{Verification and reproducible deliverables}
-The supplied sample output is a useful check, but numerical agreement alone
-does not establish a correct implementation. The repository's
-\texttt{hw1\_results/verify\_hw1.R} performs ten checks, including:
+\section{Numerical checks}
+\texttt{hw1\_results/verify\_hw1.R} checks the calculations by:
 \begin{itemize}
 \item reconstructing cumulative bootstrap returns by summing underlying
 daily log returns;
@@ -405,8 +387,8 @@ and checking the long-only bounds;
 \item testing the risk function on separate synthetic inputs;
 \item fitting ordinary regressions directly with \texttt{lm.fit()} to
 verify every year's intercept, beta, and annualized alpha;
-\item checking the annual ticker permutations, descending alpha order,
-matrix dimensions, and generated PNG artifacts.
+\item checking ticker permutations, descending alpha order, matrix
+dimensions, and saved plots.
 \end{itemize}
 
 All ten checks pass. The largest five-horizon allocation difference from the
@@ -415,21 +397,17 @@ The largest annualized-alpha difference before display rounding is
 approximately $4.98\times10^{-5}$, within the four-decimal table precision.
 The full verification record is reproduced in Appendix~\ref{app:verification}.
 
-The package includes the original assignment and reference images, the
-completed submission, this PDF and its LaTeX source, vector and raster
-figures, full scenario and annual-statistics exports, the console record,
-verification code, setup instructions, and environment/data manifests.
-The 1,000 individual scenario values are provided in machine-readable files
-alongside this report rather than printed as thousands of table rows.
+The individual scenarios, input data, and annual statistics are saved as
+CSV/RDS files under \texttt{hw1\_results/tables/}.
 
 From the repository root on Windows, run:
 \begin{lstlisting}[numbers=none]
 Rscript --vanilla setup.R
 powershell -ExecutionPolicy Bypass -File build.ps1
 \end{lstlisting}
-The README gives equivalent R and LaTeX commands for other platforms. The
-setup installs missing packages and records the pinned course-package source
-commits; it does not silently replace existing installations.
+The README lists the R and LaTeX commands for other platforms. The setup
+installs missing packages from the recorded course-package commits and
+retains existing installations.
 
 \begin{thebibliography}{9}
 \bibitem{univariate} J. Pawlowski. \emph{Univariate Investment Strategies},
@@ -455,8 +433,10 @@ shortest holding block, $h=596$.}{tab:shortreturns}
 \smallinput{short_wealth_first5.tex}{First five optimized portfolio-metric
 values at the shortest holding block.}{tab:shortwealth}
 \wideinput{bootstrap_overlap.tex}{Historical-window overlap diagnostics.
-These describe reuse of historical return intervals, not an effective sample
-size estimate.}{tab:overlap}
+``Overlap'' is the percentage of sampled scenario pairs sharing at least one
+return interval. ``Mean shared'' is the average percentage of a block's return
+intervals shared by a pair. ``Disjoint maximum'' counts the largest set of
+nonoverlapping return blocks available in the historical sample.}{tab:overlap}
 \wideinput{annual_windows.tex}{All CAPM endpoint intervals, including
 their shared boundaries and observation counts.}{tab:windows}
 \wideinput{last_window_head.tex}{First six rows of the final endpoint
@@ -477,8 +457,7 @@ were independently verified.
 \clearpage
 \section{Complete submitted R code}
 \label{app:code}
-This is the complete file submitted for the homework, including the original
-question comments, diagnostic expressions, and filled-in solutions.
+The R submission includes the professor's questions and output checks.
 \lstinputlisting{../Panagiotis_Housos_hw1.R}
 
 \clearpage
