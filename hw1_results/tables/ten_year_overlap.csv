@@ -1,0 +1,2 @@
+"block_observations","return_intervals","possible_starts","bootstrap_draws","distinct_sampled_starts","duplicate_draws","sampled_pair_overlap_fraction","sampled_mean_overlap_fraction","population_pair_overlap_probability","max_disjoint_return_blocks"
+2520,2519,3443,1000,864,136,0.939007007007007,0.56481341206232,0.927899270548476,2

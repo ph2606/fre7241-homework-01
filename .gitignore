@@ -1,0 +1,24 @@
+# R session state and local configuration
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Renviron
+
+# LaTeX intermediates (the compiled PDF is intentionally committed)
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/*.xdv
+report/previews/
+report/compile_check.txt
+
+# Local temporary files
+*.tmp
+__pycache__/
+.DS_Store
+Thumbs.db

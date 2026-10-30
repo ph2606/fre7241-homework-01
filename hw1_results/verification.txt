@@ -1,0 +1,18 @@
+PASS: Return matrices and named horizon outputs have the required shapes
+PASS: Paired bootstrap returns equal sums of the underlying daily log returns
+PASS: All five optimized weights agree with inverse-covariance calculations
+PASS: Ten-year optimization agrees with the independent mathematical optimum
+PASS: Risk function has the correct sign and handles arbitrary input data
+PASS: CAPM tables and alpha matrix have eight assets and one column per interval
+PASS: Every annualized alpha agrees with independent OLS regression
+PASS: Every CAPM intercept and beta agrees with independent OLS regression
+PASS: Each year's ranking contains every ETF once in descending alpha order
+PASS: Both generated PNG plots exist and have the requested dimensions
+
+All 10 independent checks passed.
+Ten-year optimal VTI allocation: 0.4543241
+Largest weight difference from analytic optimum: 1.62e-05
+Largest annualized-alpha difference before rounding: 4.98e-05
+
+Package warnings during execution:
+M-step did NOT converge. Returning unconverged lM-estimate
